@@ -212,6 +212,68 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     
     
     /**
+     * Iterator that iterates over this tree in pre-order.
+     */
+    private class TreeIterator implements Iterator<TreeNode<T>> {
+        /**
+         * Iterator for the direct children.
+         */
+        private Iterator<TreeNode<T>> children;
+        /**
+         * Iterator for the grandchildren children.
+         */
+        private Iterator<TreeNode<T>> childIterator;
+        
+        
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean hasNext() {
+            if(children == null) {  //Still at root
+                return true;
+                
+            } else {
+                if(childIterator != null) {
+                    if(childIterator.hasNext()) { //Still grandchildren left
+                        return true;
+                        
+                    } else {  //No grandchildren but children left
+                        return children.hasNext();
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public TreeNode<T> next() {
+            if(children == null) {  //Still at root
+                children = getChildren().iterator();
+                if(children.hasNext()) {
+                    childIterator = children.next().iterator();
+                }
+                return TreeNode.this;
+                
+            } else {
+                if(childIterator.hasNext()) {
+                    //While there are grandchildren, return them
+                    return childIterator.next();
+                    
+                } else {  //Otherwise go to next child
+                    childIterator = children.next().iterator();
+                    return childIterator.next();
+                }
+            }
+        }
+    }
+    
+    /**
      * Returns a iterator that traverses this tree in pre-order.
      * 
      * @return iterator that traverses this tree in pre-order
@@ -223,52 +285,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         preOrder(list::add);
         return list.iterator();
         */
-
-        return new Iterator<TreeNode<T>>() {
-            private Iterator<TreeNode<T>> children;
-            private Iterator<TreeNode<T>> childIterator;
-            
-            
-            
-            @Override
-            public boolean hasNext() {
-                if(children == null) {  //Still at root
-                    return true;
-                    
-                } else {
-                    if(childIterator != null) {
-                        if(childIterator.hasNext()) { //Still grandchildren left
-                            return true;
-                            
-                        } else {  //No grandchildren but children left
-                            return children.hasNext();
-                        }
-                    } else {
-                        return false;
-                    }
-                }
-            }
-            
-            @Override
-            public TreeNode<T> next() {
-                if(children == null) {  //Still at root
-                    children = getChildren().iterator();
-                    if(children.hasNext()) {
-                        childIterator = children.next().iterator();
-                    }
-                    return TreeNode.this;
-                    
-                } else {
-                    if(childIterator.hasNext()) { //While there are grandchildren, return them
-                        return childIterator.next();
-                        
-                    } else {  //Otherwise go to next child
-                        childIterator = children.next().iterator();
-                        return childIterator.next();
-                    }
-                }
-            }
-        };
+        
+        return new TreeIterator();
     }
     
     /**
@@ -278,6 +296,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     public void forEach(Consumer<? super TreeNode<T>> action) {
         preOrder(action);
     }
+    
     
     /**
      * {@inheritDoc}
