@@ -184,6 +184,33 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         return node;
     }
     
+    /**
+     * Removes the child with at given index.
+     * 
+     * @param index index of the child to be removed
+     * @return removed child node
+     */
+    public TreeNode<T> remove(int index) {
+        return children.remove(index);
+    }
+    
+    /**
+     * Removes the first child that holds the given data and returns the
+     * whole node.
+     * 
+     * @param child data of the child to be removed
+     * @return removed child node
+     */
+    public TreeNode<T> remove(T child) {
+        for(int i=0; i<children.size(); i++) {
+            if(child.equals(children.get(i).getData())) {
+                return children.remove(i);
+            }
+        }
+        
+        return null;
+    }
+    
     
     /**
      * Performs the given action for each node in this tree in pre-order.
