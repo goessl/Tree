@@ -5,6 +5,9 @@ Every node stores a reference to its parent node, children nodes and its
 data.
 Every node is also a tree consisting of itself and all of its children.
 
+This package includes JTreeWrapper that can be used to pass a tree to a JTree
+to be displayed graphically.
+
 ## Usage
 
 A new node/tree can be constructed with the data it should store.
@@ -20,6 +23,10 @@ generated with a single function.
 
 Simply download this repository and add it to your project as a new package!
 Done!
+
+## TODO
+
+ - [x] Add visual output
 
 ## License (MIT)
 
