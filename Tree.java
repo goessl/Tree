@@ -28,10 +28,12 @@ package tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import javax.swing.tree.TreeNode;
 
 
 
@@ -39,10 +41,10 @@ import java.util.function.Function;
  * TreeNode class used to store and generate tree like data structures.
  * 
  * @author Sebastian Gössl
- * @version 1.0 4.9.2019
+ * @version 1.1 21.2.2020
  * @param <T> data type the TreeNode should store
  */
-public class TreeNode<T> implements Iterable<TreeNode<T>> {
+public class Tree<T> implements TreeNode, Iterable<Tree<T>> {
     
     /**
      * Data of this node.
@@ -51,11 +53,11 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     /**
      * Parent node or null if this is the root node.
      */
-    private final TreeNode<T> parent;
+    private final Tree<T> parent;
     /**
      * Children nodes.
      */
-    private final List<TreeNode<T>> children = new ArrayList<>();
+    private final List<Tree<T>> children = new ArrayList<>();
     
     
     
@@ -64,7 +66,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @param data data of this node
      */
-    public TreeNode(T data) {
+    public Tree(T data) {
         this(null, data);
     }
     
@@ -76,7 +78,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param data data of the this node
      * @param grow growth function
      */
-    public TreeNode(T data, Function<T, Iterable<T>> grow) {
+    public Tree(T data, Function<T, Iterable<T>> grow) {
         this(data);
         grow.apply(data).forEach((child) -> add(child, grow));
     }
@@ -87,7 +89,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param parent parent node of this node
      * @param data data of this node
      */
-    private TreeNode(TreeNode<T> parent, T data) {
+    private Tree(Tree<T> parent, T data) {
         this.parent = parent;
         this.data = data;
     }
@@ -102,7 +104,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param data data of the this node
      * @param grow growth function
      */
-    private TreeNode(TreeNode<T> parent, T data,
+    private Tree(Tree<T> parent, T data,
             Function<T, Iterable<T>> grow) {
         
         this(parent, data);
@@ -125,7 +127,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @return parent of this node or null if this is a root node
      */
-    public TreeNode<T> getParent() {
+    @Override
+    public Tree<T> getParent() {
         return parent;
     }
     
@@ -134,7 +137,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @return children of this node
      */
-    public List<TreeNode<T>> getChildren() {
+    public List<Tree<T>> getChildren() {
         return Collections.unmodifiableList(children);
     }
     
@@ -153,6 +156,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @return if this is a leaf node
      */
+    @Override
     public boolean isLeaf() {
         return getChildren().isEmpty();
     }
@@ -164,8 +168,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param child data of the child to be added
      * @return the newly added child node
      */
-    public TreeNode<T> add(T child) {
-        final TreeNode<T> node = new TreeNode<>(this, child);
+    public Tree<T> add(T child) {
+        final Tree<T> node = new Tree<>(this, child);
         children.add(node);
         return node;
     }
@@ -178,8 +182,8 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param grow growth function
      * @return the newly added child node
      */
-    public TreeNode<T> add(T child, Function<T, Iterable<T>> grow) {
-        final TreeNode<T> node = new TreeNode<>(this, child, grow);
+    public Tree<T> add(T child, Function<T, Iterable<T>> grow) {
+        final Tree<T> node = new Tree<>(this, child, grow);
         children.add(node);
         return node;
     }
@@ -190,7 +194,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param index index of the child to be removed
      * @return removed child node
      */
-    public TreeNode<T> remove(int index) {
+    public Tree<T> remove(int index) {
         return children.remove(index);
     }
     
@@ -201,7 +205,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param child data of the child to be removed
      * @return removed child node
      */
-    public TreeNode<T> remove(T child) {
+    public Tree<T> remove(T child) {
         for(int i=0; i<children.size(); i++) {
             if(child.equals(children.get(i).getData())) {
                 return children.remove(i);
@@ -219,7 +223,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @param action to be performed for every node in pre-order
      */
-    public void preOrder(Consumer<? super TreeNode<T>> action) {
+    public void preOrder(Consumer<? super Tree<T>> action) {
         action.accept(this);
         getChildren().forEach((child) -> child.preOrder(action));
     }
@@ -231,7 +235,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * 
      * @param action to be performed for every node in post-order
      */
-    public void postOrder(Consumer<? super TreeNode<T>> action) {
+    public void postOrder(Consumer<? super Tree<T>> action) {
         getChildren().forEach((child) -> child.postOrder(action));
         action.accept(this);
     }
@@ -239,17 +243,67 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     
     
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Tree<T> getChildAt(int childIndex) {
+        return getChildren().get(childIndex);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getChildCount() {
+        return getChildren().size();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getIndex(TreeNode node) {
+        final List<Tree<T>> children = getChildren();
+        
+        for(int i=0; i<children.size(); i++) {
+            final Tree<T> child = children.get(i);
+            if(equals(child)) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getAllowsChildren() {
+        return true;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Enumeration children() {
+        return Collections.enumeration(getChildren());
+    }
+    
+    
+    /**
      * Iterator that iterates over this tree in pre-order.
      */
-    private class TreeIterator implements Iterator<TreeNode<T>> {
+    private class TreeIterator implements Iterator<Tree<T>> {
         /**
          * Iterator for the direct children.
          */
-        private Iterator<TreeNode<T>> children;
+        private Iterator<Tree<T>> children;
         /**
          * Iterator for the grandchildren children.
          */
-        private Iterator<TreeNode<T>> childIterator;
+        private Iterator<Tree<T>> childIterator;
         
         
         
@@ -279,13 +333,13 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
          * {@inheritDoc}
          */
         @Override
-        public TreeNode<T> next() {
+        public Tree<T> next() {
             if(children == null) {  //Still at root
                 children = getChildren().iterator();
                 if(children.hasNext()) {
                     childIterator = children.next().iterator();
                 }
-                return TreeNode.this;
+                return Tree.this;
                 
             } else {
                 if(childIterator.hasNext()) {
@@ -306,7 +360,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @return iterator that traverses this tree in pre-order
      */
     @Override
-    public Iterator<TreeNode<T>> iterator() {
+    public Iterator<Tree<T>> iterator() {
         /*
         final List<TreeNode<T>> list = new ArrayList<>();
         preOrder(list::add);
@@ -320,7 +374,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * Performs the given action for each node in pre-order.
      */
     @Override
-    public void forEach(Consumer<? super TreeNode<T>> action) {
+    public void forEach(Consumer<? super Tree<T>> action) {
         preOrder(action);
     }
     
@@ -339,12 +393,11 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     public static void main(String[] args) {
         
         /* Generating permutations */
-        
         final int[] superset = new int[]{0, 1, 2, 3};
         
         
-        final TreeNode<List<Integer>> tree =
-                new TreeNode<>(new ArrayList<>(), (node) -> {
+        final Tree<List<Integer>> tree =
+                new Tree<>(new ArrayList<>(), (node) -> {
                     
                     final List<List<Integer>> children = new ArrayList<>();
                     
@@ -371,5 +424,30 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
                 System.out.println(node.getData());
             }
         });
+        
+        /*
+        final int MAX_SIZE = 50;
+        final Random rand = new Random();
+        
+        final Tree<Integer> tree = new Tree<>(0, (i) -> {
+            final List<Integer> children = new ArrayList<>();
+            
+            while(rand.nextDouble() <= MAX_SIZE/100.0) {
+                children.add(rand.nextInt(MAX_SIZE));
+            }
+            
+            return children;
+        });
+        
+        
+        EventQueue.invokeLater(() -> {
+            final JFrame frame = new JFrame();
+            frame.setDefaultCloseOperation(
+                    WindowConstants.DISPOSE_ON_CLOSE);
+            frame.getContentPane().add(new JTree(tree),
+                    BorderLayout.CENTER);
+            frame.pack();
+            frame.setVisible(true);
+        });*/
     }
 }

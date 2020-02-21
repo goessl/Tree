@@ -1,11 +1,9 @@
 # Tree
 
-TreeNode class used to generate & store tree structures.
+Tree class used to generate & store tree structures.
 Every node stores a reference to its parent node, children nodes and its
 data.
-Every node is also a tree consisting of itself and all of its children.
-
-This package includes JTreeWrapper that can be used to pass a tree to a JTree
+This packages only class ([Tree](Tree.java)) implements TreeNode so it can be passed to a JTree
 to be displayed graphically.
 
 ## Usage
